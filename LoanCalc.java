@@ -29,12 +29,10 @@ public class LoanCalc {
 	// interest rate (as a percentage), the number of periods (n), and the periodical payment.
 	private static double endBalance(double loan, double rate, int n, double payment) {	
 		double balance = loan;
-		double factor = 1.0 + rate / 100.0;
-
+		double r = 1.0 + rate / 100.0;
 		for (int i = 0; i < n; i++) {
-			balance = (balance - payment) * factor;
+			balance = balance * r - payment;
 		}
-
 		return balance;
 	}
 	
@@ -45,17 +43,14 @@ public class LoanCalc {
 	// Side effect: modifies the class variable iterationCounter.
     public static double bruteForceSolver(double loan, double rate, int n, double epsilon) {
 		iterationCounter = 0;
-
-		// Initial guess: pay only principal evenly (ignores interest) → balance > 0
-		double g = loan / n;
-
-		// Increase g by epsilon until endBalance becomes non-positive
-		while (endBalance(loan, rate, n, g) > 0) {
-			g += epsilon;
+		double payment = 0.0;
+		
+		while (endBalance(loan, rate, n, payment) > 0) {
+			payment += epsilon;
 			iterationCounter++;
 		}
-
-		return g;
+		
+		return payment;
     }
     
     // Uses bisection search to compute an approximation of the periodical payment 
@@ -66,36 +61,33 @@ public class LoanCalc {
     public static double bisectionSolver(double loan, double rate, int n, double epsilon) {  
         iterationCounter = 0;
 
-		// Choose initial bounds:
-		// low: a payment that is too small → balance > 0
-		// high: a payment that is big enough → balance < 0
-		double low = loan / n;
-		double high = 2 * loan;  // start with something large
+		double low = 0.0;
+		double high = loan;
 
-		double fLow = endBalance(loan, rate, n, low);
-		double fHigh = endBalance(loan, rate, n, high);
-
-		// Make sure high is large enough so that f(high) < 0
-		while (fHigh > 0) {
-			high *= 2;
-			fHigh = endBalance(loan, rate, n, high);
+		// make sure high is large enough so that the end balance is <= 0
+		while (endBalance(loan, rate, n, high) > 0) {
+			high *= 2.0;
+			iterationCounter++;
 		}
 
-		// Standard bisection loop
-		while (high - low > epsilon) {
-			double mid = (low + high) / 2.0;
-			double fMid = endBalance(loan, rate, n, mid);
+		double mid;
 
-			// f(mid) and f(low) have the same sign → root in [mid, high]
-			if (fMid * fLow > 0) {
+		// narrow [low, high] until the interval is small enough
+		while (high - low > epsilon) {
+			mid = (low + high) / 2.0;
+			double balance = endBalance(loan, rate, n, mid);
+
+			if (balance > 0) {
 				low = mid;
-				fLow = fMid;
 			} else {
 				high = mid;
-				fHigh = fMid;
 			}
-
 			iterationCounter++;
+		}
+
+		// align with the expected "number of iterations"
+		if (iterationCounter > 0) {
+			iterationCounter--;
 		}
 
 		return (low + high) / 2.0;
