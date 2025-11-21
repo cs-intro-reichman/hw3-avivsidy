@@ -27,23 +27,71 @@ public class Anagram {
 	}  
 
 	// Returns true if the two given strings are anagrams, false otherwise.
-	public static boolean isAnagram(String str1, String str2) {
-		// Replace the following statement with your code
-		return false;
+	public static boolean isAnagram(String str1, String str2)
+	{
+		int [] charCounts = new int[26]; 
+
+		for (int i = 0; i < str1.length(); i++)
+			{
+			char c = Character.toLowerCase(str1.charAt(i));
+			if (c >= 'a' && c <= 'z')
+			{
+				charCounts[c - 'a']++;
+			}
+			}
+
+		for (int i = 0; i < str2.length(); i++)
+		{
+			char c = Character.toLowerCase(str2.charAt(i));
+			if (c >= 'a' && c <= 'z')
+			{
+				charCounts[c - 'a']--;
+			}
+		}
+		for (int i=0; i < charCounts.length; i++)
+			{
+			if (charCounts[i] != 0)
+				{
+				return false;
+				}
+			}	
+		return true;	
 	}
 	   
 	// Returns a preprocessed version of the given string: all the letter characters are converted
 	// to lower-case, and all the other characters are deleted, except for spaces, which are left
 	// as is. For example, the string "What? No way!" becomes "whatnoway"
 	public static String preProcess(String str) {
-		// Replace the following statement with your code
-		return "";
-	} 
+    for (int i = 0; i < str.length(); i++) {
+        char c = Character.toLowerCase(str.charAt(i));
+
+        if (c < 'a' || c > 'z')
+		{
+            str = str.substring(0, i) + str.substring(i + 1);
+            i--;
+        }
+		else
+		{
+            if (str.charAt(i) != c)	
+			{
+                str = str.substring(0, i) + c + str.substring(i + 1);
+            }
+        }
+    }
+    return str;
+}
 	   
 	// Returns a random anagram of the given string. The random anagram consists of the same
 	// characters as the given string, re-arranged in a random order. 
 	public static String randomAnagram(String str) {
-		// Replace the following statement with your code
-		return "";
-	}
+    char[] chars = str.toCharArray();
+    for (int i = 0; i < chars.length; i++)
+	{
+        int j = (int)(Math.random() * chars.length);
+        char temp = chars[i];
+        chars[i] = chars[j];
+        chars[j] = temp;
+    }
+    return new String(chars);
+}
 }
