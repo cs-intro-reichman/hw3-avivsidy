@@ -31,7 +31,7 @@ public class LoanCalc {
 		double balance = loan;
 		double r = 1.0 + rate / 100.0;
 		for (int i = 0; i < n; i++) {
-			balance = balance * r - payment;
+			balance = (balance - payment) * r;  // payment first, then interest
 		}
 		return balance;
 	}
@@ -45,6 +45,7 @@ public class LoanCalc {
 		iterationCounter = 0;
 		double payment = 0.0;
 		
+		// increase payment by epsilon until the balance becomes <= 0
 		while (endBalance(loan, rate, n, payment) > 0) {
 			payment += epsilon;
 			iterationCounter++;
@@ -64,7 +65,7 @@ public class LoanCalc {
 		double low = 0.0;
 		double high = loan;
 
-		// make sure high is large enough so that the end balance is <= 0
+		// grow high until it is enough to bring the balance below zero
 		while (endBalance(loan, rate, n, high) > 0) {
 			high *= 2.0;
 			iterationCounter++;
@@ -72,7 +73,7 @@ public class LoanCalc {
 
 		double mid;
 
-		// narrow [low, high] until the interval is small enough
+		// bisection: narrow the interval [low, high] until it's small enough
 		while (high - low > epsilon) {
 			mid = (low + high) / 2.0;
 			double balance = endBalance(loan, rate, n, mid);
@@ -83,11 +84,6 @@ public class LoanCalc {
 				high = mid;
 			}
 			iterationCounter++;
-		}
-
-		// align with the expected "number of iterations"
-		if (iterationCounter > 0) {
-			iterationCounter--;
 		}
 
 		return (low + high) / 2.0;
